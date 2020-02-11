@@ -1,0 +1,42 @@
+{
+  "messageServer": {
+    "host": "log.io",
+    "port": 6689
+  },
+  "inputs": [
+    {
+      "source": "server",
+      "stream": "app",
+      "config": {
+        "path": "/var/log/node/combined.log"
+      }
+    },
+    {
+      "source": "database",
+      "stream": "mongo",
+      "config": {
+        "path": "/var/log/mongo/"
+      }
+    },
+    {
+      "source": "database",
+      "stream": "mongo",
+      "config": {
+        "path": "/var/log/mongodb/mongod.log"
+      }
+    },
+    {
+      "source": "nginx",
+      "stream": "http",
+      "config": {
+        "path": "/var/log/nginx/access.log"
+      }
+    }, {
+      "source": "nginx",
+      "stream": "http",
+      "config": {
+        "path": "/var/log/nginx/error.log"
+      }
+    }
+  ]
+}

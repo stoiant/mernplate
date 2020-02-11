@@ -1,0 +1,11 @@
+{
+  "messageServer": {
+    "port": 6689,
+    "host": "log.io"
+  },
+  "httpServer": {
+    "port": 6688,
+    "host": "log.io"
+  },
+  "debug": false
+}

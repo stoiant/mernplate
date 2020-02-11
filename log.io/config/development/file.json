@@ -1,0 +1,14 @@
+{
+  "messageServer": {
+    "host": "127.0.0.1",
+    "port": 6689
+  },
+  "inputs": [{
+      "source": "server",
+      "stream": "app",
+      "config": {
+        "path": "/var/log/node/combined.log"
+      }
+    }
+  ]
+}

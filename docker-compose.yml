@@ -1,0 +1,89 @@
+version: '3.7'
+services:
+  server:
+    container_name: server
+    build:
+      context: ./server
+    ports:
+      - "3001:3001"
+      - "3003:3003"
+    environment:
+      NODE_ENV: development
+    volumes:
+      - /var/log/node:/var/log/node
+    networks:
+      - app-network
+  client:
+    container_name: client
+    build:
+      context: ./client
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/log/nginx:/var/log/nginx
+      - web-root:/usr/share/nginx/html
+      - etc-letsencrypt:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    networks:
+      - app-network
+  database:
+    container_name: database
+    build:
+        context: ./database
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/lib/mongodb:/var/lib/mongodb
+      - /var/log/mongodb:/var/log/mongodb
+      - /var/log/mongosql:/var/log/mongosql
+    networks:
+      - app-network
+  weblog:
+    container_name: log.io
+    build:
+        context: ./log.io
+    ports:
+      - "6688:6688"
+      - "6689:6689"
+    volumes:
+      - /var/log:/var/log
+    networks:
+      - app-network
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - etc-letsencrypt:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+      - web-root:/usr/share/nginx/html
+    depends_on:
+      - client
+    networks:
+      - app-network
+    command: certonly --webroot --webroot-path=/usr/share/nginx/html --email localhost@localhost.com --agree-tos --no-eff-email --force-renewal -d localhost.com -d www.localhost.com
+
+volumes:
+  etc-letsencrypt:
+    driver: local
+    driver_opts:
+      type: none
+      device: /etc/letsencrypt
+      o: bind
+  certbot-www:
+    driver: local
+    driver_opts:
+      type: none
+      device: /var/www/certbot
+      o: bind
+  web-root:
+    driver: local
+    driver_opts:
+      type: none
+      device: /var/data/nginx/html
+      o: bind
+
+networks:
+  app-network:
+    driver: bridge
