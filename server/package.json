@@ -10,10 +10,7 @@
     "lint": "./node_modules/.bin/eslint ./routes ./src ./app.js",
     "test": "mocha --exit --reporter spec \"src/*/*.test.js\"",
     "dev": "nodemon app.js -L --exec \"npm run test && npm run lint && node\"",
-    "build": "webpack --config webpack.config.js",
-    "start": "pm2-runtime start app.js -i max",
-    "stop": "pm2 stop all",
-    "delete": "pm2 delete app"
+    "build": "webpack --config webpack.config.js"
   },
   "devDependencies": {
     "chai": "4.1.2",

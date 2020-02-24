@@ -20,6 +20,7 @@ import 'animate.css'
 import axios from 'axios'
 import { CssBaseline } from '@material-ui/core'
 
+// TODO this should be separated
 const theme = createMuiTheme({
   palette: {
     primary: {
@@ -50,9 +51,10 @@ const theme = createMuiTheme({
 class App extends Component {
   constructor(props) {
     super(props);
-    this.url = `http://${process.env.REACT_APP_HOST}:${process.env.REACT_APP_PORT}`;
-    this.nodeUrl = 'http://localhost:3003';
-    this.logUrl = 'http://localhost:6688/';
+    this.domain = 'thedemo.dev'
+    this.url = `${process.env.REACT_APP_SCHEME}://${process.env.REACT_APP_HOST}:${process.env.REACT_APP_API_PORT}`;
+    this.nodeUrl = `${process.env.REACT_APP_SCHEME}://${process.env.REACT_APP_HOST}:${process.env.REACT_APP_DASH_PORT}`;;
+    this.logUrl = `${process.env.REACT_APP_SCHEME}://${process.env.REACT_APP_HOST}:${process.env.REACT_APP_LOG_PORT}`;;
     this.props.setNotifications(this.notification);
     this.props.setUrl(this.url);
     this.props.setNodeUrl(this.nodeUrl);

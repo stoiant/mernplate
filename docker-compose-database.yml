@@ -1,0 +1,19 @@
+version: '3.7'
+services:
+  database:
+    container_name: database
+    build:
+        context: ./database
+    ports:
+      - "27017:27017"
+      - "28017:28017"
+      - "3307:3307"
+    volumes:
+      - ${DATA}/lib/mongodb:/var/lib/mongodb
+      - ${DATA}/log/mongodb:/var/log/mongodb
+      - ${DATA}/log/mongosql:/var/log/mongosql
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge

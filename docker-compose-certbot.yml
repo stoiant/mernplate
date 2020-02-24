@@ -1,0 +1,37 @@
+version: '3.7'
+services:
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - etc-letsencrypt:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+      - web-root:/usr/share/nginx/html
+    depends_on:
+      - client
+    networks:
+      - app-network
+    command: certonly --webroot --webroot-path=/usr/share/nginx/html --email ${EMAIL} --agree-tos --no-eff-email --force-renewal -d ${DOMAIN}
+volumes:
+  etc-letsencrypt:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${DATA}/letsencrypt
+      o: bind
+  certbot-www:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${DATA}/www/certbot
+      o: bind
+  web-root:
+    driver: local
+    driver_opts:
+      type: none
+      # this directory should be empty, otherwise it will not be populated with the content of the container
+      device: ${DATA}/nginx/html
+      o: bind
+networks:
+  app-network:
+    driver: bridge

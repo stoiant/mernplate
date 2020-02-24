@@ -2,18 +2,19 @@ import React, { Component } from 'react'
 import styles from './home.module.scss'
 import { Card, CardContent, Typography } from '@material-ui/core'
 import GitHubButton from 'react-github-btn'
+import Readme from '../Readme/Readme'
 
 class Home extends Component {
   render() {
     return (
       <div className={ styles.home }>
+        <Readme />
         <Card className={ styles.card }>
           <CardContent>
             <Typography color="textSecondary" gutterBottom>
               Mern Boiler Plate
             </Typography>
             <Typography variant="h5" component="h2" gutterBottom>
-
             </Typography>
             <Typography component="p">
               <GitHubButton

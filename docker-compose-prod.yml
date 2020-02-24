@@ -1,0 +1,39 @@
+version: '3.7'
+services:
+  client:
+    build:
+      context: ./client
+    container_name: client
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ${DATA}/log/nginx:/var/log/nginx
+      - web-root:/usr/share/nginx/html
+      - etc-letsencrypt:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    networks:
+      - app-network
+volumes:
+  etc-letsencrypt:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${DATA}/letsencrypt
+      o: bind
+  certbot-www:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${DATA}/www/certbot
+      o: bind
+  web-root:
+    driver: local
+    driver_opts:
+      type: none
+      # this directory should be empty, otherwise it will not be populated with the content of the container
+      device: ${DATA}/nginx/html
+      o: bind
+networks:
+  app-network:
+    driver: bridge

@@ -9,11 +9,15 @@
   "scripts": {
     "dev:client": "npm start --prefix client/",
     "dev:server": "npm run dev --prefix server/",
-    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
-    "build": "npm run build --prefix client/ && npm run build --prefix server/",
-    "start": "pm2 start build/app.js -i max",
-    "stop": "pm2 stop all",
-    "delete": "pm2 delete app"
+    "dev:run": "export NODE_ENV=development && concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:build": "npm run build --prefix client/ && npm run build --prefix server/",
+    "docker:dev": "docker-compose -f docker-compose-dev.yml -f docker-compose-server.yml -f docker-compose-database.yml -f docker-compose-weblog.yml",
+    "docker:prod": "docker-compose -f docker-compose-prod.yml -f docker-compose-server.yml -f docker-compose-database.yml -f docker-compose-weblog.yml",
+    "client:dev": "docker-compose -f docker-compose-dev.yml",
+    "client:prod": "docker-compose -f docker-compose-prod.yml",
+    "weblog": "docker-compose -f docker-compose-weblog.yml",
+    "database": "docker-compose -f docker-compose-database.yml",
+    "server": "docker-compose -f docker-compose-server.yml"
   },
   "dependencies": {
     "concurrently": "^4.1.0"

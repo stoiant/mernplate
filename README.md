@@ -15,172 +15,295 @@ Boilerplate for MERN stack development, *NOT* ready for production or even *DEV*
 + Testing with [Mocha](https://mochajs.org/) and [Chai](https://www.chaijs.com/)
 + Clean code with [ESLint](https://eslint.org/), [JavaScript Standard Style](https://standardjs.com/)
 + [Webpack](https://webpack.js.org/) built production server
++ Log tailing in the browser using [log.io](http://logio.org/)
++ [MongoDB](https://docs.mongodb.com/) for database
++ Express monitoring using [exress-status](https://www.npmjs.com/package/express-status-monitor)
++ Server monitoring using [node-dash](https://www.npmjs.com/package/node-dash)
 
 ## Roadmap
 
 These are the planned updates of the project.
 
-- Test Deployment is working
-- Dev Ready
+- Documentation
 - Production ready
+- Add instructions for certbot and production deployment details
+- Split mernplate by component
+- GraphQL
+- Role based authentication (currently dashboards and logs are public)
+- Monitoring using ELK
+- [K3S](https://k3s.io/) and [Rancher](https://rancher.com/docs/k3s/latest/en/) for production
 - Cleanup
 
 ## Support
 
 *NONE WHATSOEVER, NO WARRANTY OF ANY KIND, ETC.*
 
-## Installation
+## Components
 
-1. Install dependencies
-2. Set env variables
-3. Add SSL files
-4. Create database
 
-**Install dependencies**
+### Frontend
 
-Run <code>npm install</code> at server folder
+**Requirements:**
+In order to be able to build and run the dependencies you will have to install a compatible version of node `Node v11.15.0` was tested to work with this project.
+
+#### Development
+
+Project is bootstrapped with [react-create-app](https://create-react-app.dev/docs/getting-started/). There is `Docker` image created for the client that uses `nginx` to serve the static content. For development is not necessary to build the image and it is easier to just run it locally.
 
 Run <code>npm install</code> at client folder
+Run <code>npm run start</code> at client folder
 
-**Set env variables - Client**
+`react-create-app` will auto refresh as your code is updated. The server can be found under `localhost:3000` and it should be automatically launched with the `run` command.
 
-Create <code>.env.development</code> and <code>.env.production</code> files inside <code>client/</code> folder.
+**Configuration**
 
-Use port `3002` for development and port `80` for production.
+The configuration file is based on the `NODE_ENV` variable, which defaults to `development`. Here is the default configuration file:
 
-Example (include all of these):
+```
+REACT_APP_HOST=localhost
+REACT_APP_LOG_PORT=6688
+REACT_APP_API_PORT=3001
+REACT_APP_DASH_PORT=3003
+REACT_APP_SCHEME=http
+```
 
-    HOST=0.0.0.0
-    PORT=3002
-    REACT_APP_HOST=localhost
-    REACT_APP_PORT=3001
-    SKIP_PREFLIGHT_CHECK=true
-    CHOKIDAR_USEPOLLING=true
+`REACT_APP_` prefix is required by `react-create-app`. If you are running only the frontend the remaining settings will not be required.
 
-Located at `client/.env.development`.
+**Docker**
 
-Note: if you change the ports change them in the dockerfiles too (root, server).
+If you want to build the docker image it comes bundled with `nginx`. You have to build the app before building the docker image using:
 
-**Set env variables - Server**
+Run <code>npm run build</code> at client folder
 
-Create <code>test.config.env</code>, <code>development.config.env</code> and <code>production.config.env</code> files inside <code>server/.env/</code> folder.
+The [Docker Compose](https://docs.docker.com/compose/compose-file/) is used to build the image with the corresponding configuration. If you prefer you can use the local build.
 
-Use port `3001` for test, development and port `80` for production.
+Since `nginx` is configured to use `SSL` you will have to generate your `localhost` certificates and replaced the ones found under `client/certs`. You can use the following command to generate your `localhost` certificates:
 
-Example (include all of these):
+```
+openssl req -x509 -out localhost.crt -keyout localhost.key \
+  -newkey rsa:2048 -nodes -sha256 \
+  -subj '/CN=localhost' -extensions EXT -config <( \
+   printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
+```
 
-    IP=0.0.0.0
-    HOST=localhost
-    PORT=3001
-    CLIENT_HOST=localhost
-    CLIENT_PORT=3002
-    REDIS_URL=redis://redis:6379
-    SSL_KEY=[SSL_KEY_FILE_NAME]
-    SSL_CRT=[SSL_CRT_FILE_NAME]
-    DB_HOST=[MONGOLAB_DB_URL]
-    DB_USER=[MONGOLAB_DB_USERNAME]
-    DB_PASS=[MONGOLAB_DB_PASSWORD]
+Move to the root directory and edit the `.env` file and change the `PROJECT` path to where you have cloned the repository. `PROJECT` path is used to mount the build directory so that your changes are reflected. The `client/build` directory is mounted so that `nginx` can serve the updated content.
 
-Located at `server/.env/development.config.env`.
+Run <code>npm run client:dev -- build</code> at main project folder to build the image
 
-Note: if you change the ports change them in the dockerfiles too (root, server).
+Run <code>npm run client:dev -- up</code> at main project folder to start the image with ports published and build directory mounted.
 
-**Add SSL files**
 
-Put your (for example) <code>crt.txt</code> and <code>key.txt</code> files inside <code>server/ssl/</code> folder.
 
-Tip: create them online for free at [ZeroSSL](https://zerossl.com/)
+#### Production
+
+For production you will need a valid `SSL` certificate. You can use [Lets Encrypt](https://letsencrypt.org/) or [SSL For Free](https://www.sslforfree.com/) to obtain a valid certificate. 
+
+If using `Lets Encrypt`, you ca utilize the `certbot`. For secured domains such as `.app` or `.dev` the setup with `certbot` will not work as `SSL` redirection is enforced.
+
+When deploying for production you will have to copy the certificates to the mount directory.
+
+Change the `localhost` to your `domain.*` inside `client/config/nginx.conf`. Change the `.env` file as well in the main directory to correspond to your settings.
+
+**_TODO:_**  Add more details.
+
+### Backend
+
+**_TODO:_**  Currently `nginx` has a setup for `reverse-proxy` as there is no `SSL` configured for the `APP`, `Database` and `Log.io`. The client accesses the `express-status` dashboard, tailed logs, and `node-dash` using an `iframe`, it is not ideal but works for easy access when developing.
+
+#### APP/API Server
+
+**Configuration**
+
+The default port for the `API` server is `3001` and the server dashboard runs under port `3003`. Express monitoring url is `:3001/status` and the server dashboard can be found at `:3003/node-dash`.
+
+The environment confuguration files are found under `.env` and nodeEnv is used to source the configurations for development and production.
+
+Sample configuration file:
+
+```
+IP=0.0.0.0
+HOST=localhost
+PORT=3001
+CLIENT_HOST=localhost
+# currently this is not used, idea is to be used for DEV and testing
+CLIENT_PORT=3002
+DB_HOST=database
+DB_USER=
+DB_PASS=
+```
+
+`Node v11.15.0` was used for the testing and is required to be install for things to work.
+
+#### Development
+
+First install the dependencies then run the server.
+
+Run <code>npm install</code> at server folder
+Run <code>npm run dev</code> at server folder
+
+**Docker**
+
+`.env` `DATA` is used for central mounting point.
+
+Run <code>npm run server:dev -- build</code> at main project folder to build the image
+
+Run <code>npm run client:server -- up</code> at main project folder to start the image with ports published and build directory mounted.
+
+
+#### Production
+
+Currently the same instructions as for Dev.
+
+**_TODO:_**  Add `SSL` support for the API server, currently `nginx` reversed-proxy is used to access the API via SSL.
+
+
+#### Database
+
+The database is ran in a docker container only. The following is used for the docker image:
+
++ [pusion](https://github.com/phusion/baseimage-docker) Ubuntu 18.04 LTS
++ [MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/) v4.2
++ [MongoDB BI](https://docs.mongodb.com/bi-connector/master/) v2.13.1
++ configuration are located under `database/mongod` and `database/mongosqld`
++ [runit](http://smarden.org/runit/) is used to run both the mongodb and mongodb-bi
+
+Ports:
+
++ 27017: process
++ 28017: http
++ 3307: mongod-bi
+
+Mounts:
+
+`.env` `DATA` is used for central mounting point, where database and logs are located.
+
+**_TODO:_**  Add user setup and authentication for both MongoDB and the MongoDB BI connector.
+
+#### Development
+
+You have to build the image then run it using the following:
+
+Run <code>npm run database -- build</code> at main project folder to build the image
+
+Run <code>npm run database -- up</code> at main project folder to start the image with ports published and build directory mounted.
+
+#### Production
+
+Currently the same as developemnt.
+
+#### Log.io
+
+`.env` `DATA` is used for central mounting point, where logs from all services are located. The log.io runs the server at port `6688` and the data shipper is just ran locally.
+
+To build and run the image use:
+
+Run <code>npm run weblog -- build</code> at main project folder to build the image
+
+Run <code>npm run weblog -- up</code> at main project folder to start the image with ports published and data directory mounted.
+
+Development and production configurations are the same.
+
 
 ## Usage
 
-Note: use the following commands at the root folder.
-
-Development
-
-1. Start <code>docker-compose -f docker-compose.development.yml up</code>
-2. Go to <code>https://localhost:3001</code> in browser for server
-3. Go to <code>http://localhost:3002</code> in browser for client
-
-Production
-
-1. Run <code>npm run build</code>
-1. Start <code>docker-compose -f docker-compose.production.yml up -d</code>
-2. Go to <code>https://localhost:80</code> in browser
-
-Note: run `npm rebuild node-sass` inside the client container if asked.
 
 ## Docker commands
 
-Using separated docker-compose files for development and production.
-
-**Development**
-
-Start: `docker-compose -f docker-compose.development.yml up`<br>
-Stop: `docker-compose -f docker-compose.development.yml down`
-
-**Production**
-
-Start: `docker-compose -f docker-compose.production.yml up`<br>
-Stop: `docker-compose -f docker-compose.production.yml down`
-
-## Without docker
-
-You have to set the environment you use in your scripts at `server/package.json`:
-
-    "test": "set NODE_ENV=test&& mocha --exit --reporter spec \"src/*/*.test.js\"",
-    "dev": "set NODE_ENV=development&& nodemon app.js -L --exec \"npm run test && npm run lint && node\"",
-    "build": "set NODE_ENV=production&& webpack --config webpack.config.js",
-
-Just overwrite the test, dev, build lines with the above.
-
-Development
-
-1. Start <code>npm run dev</code> (or `dev:client` and `dev:server`)
-2. Go to <code>https://localhost:3001</code> (server)
-3. Go to <code>http://localhost:3002</code> (client)
-
-Production
-
-1. Run <code>npm run build</code>
-1. Start <code>npm start</code>
-2. Go to <code>https://localhost:80</code>
+**_TODO:_** Add helpful commands when only the docker image is build and ran withot using composer.
 
 Note: you may need to install nodemon: <code>npm install nodemon -g</code>
 
 ## NPM Scripts
 
-If you prefer not to use docker, you can use the following scripts from the root folder:
+In the main folder run `npm install` and then you can take advantage of the following scripts:
 
-**npm run dev**
-
-To use this command, you should install concurrently.<br>
-It's prepared, just run `npm install` under the root folder.
-
+    
 **npm run dev:client**
 
-Runs the react client in development mode.<br>
-The browser will lint, reload if you make edits.
+Starts the client using the `react-create-app` defaults:
+
+```
+npm start --prefix client
+```
+
 
 **npm run dev:server**
 
-Runs the node server in development mode.<br>
-The server will test, lint and reload if you make edits.
+Starts the node server locally on port `3001`:
 
-**npm run build**
+```
+npm run dev --prefix server/
+```
 
-Builds the complete application for production to the `build` folder.<br>
+**npm run dev:run**
 
-**npm start**
+Starts both the client and server in DEV mode:
 
-Runs the app in production mode with PM2 (cluster mode).
+```
+export NODE_ENV=development && concurrently \"npm run dev:client\" \"npm run dev:server\
+```
 
-**npm stop**
+**npm run dev:build**
 
-Stops the application instances in PM2.
+Build the client and server for development:
 
-**npm run delete**
+```
+export NODE_ENV=development && concurrently \"npm run dev:client\" \"npm run dev:server\
+```
 
-Removes the application instances from PM2.
+**npm run docker:dev**
+
+Wrapper to build and run *ALL DEV* images. Pass the `docker-composer` parameter using `-- build` for example or `-- up -d` to run the image in deamon mode.
+
+The underlying command being executed is:
+
+```
+docker-compose -f docker-compose-dev.yml -f docker-compose-server.yml -f docker-compose-database.yml -f docker-compose-weblog.yml
+```
+
+**npm run docker:prod**
+
+Wrapper to build and run *ALL PROD* images. Pass the `docker-composer` parameter using `-- build` for example or `-- up -d` to run the image in deamon mode.
+
+The underlying command being executed is:
+
+```
+docker-compose -f docker-compose-prod.yml -f docker-compose-server.yml -f docker-compose-database.yml -f docker-compose-weblog.yml
+```
+
+**npm run weblog**
+
+Wrapper to build and run the weblog image. Pass the `docker-composer` parameter using `-- build` for example or `-- up -d` to run the image in deamon mode.
+
+The underlying command being executed is:
+
+```
+docker-compose -f docker-compose-weblog.yml
+```
+
+**npm run database**
+
+Wrapper to build and run the database image. Pass the `docker-composer` parameter using `-- build` for example or `-- up -d` to run the image in deamon mode.
+
+The underlying command being executed is:
+
+```
+database": "docker-compose -f docker-compose-database.yml
+```
+
+**npm run server**
+
+Wrapper to build and run the server image. Pass the `docker-composer` parameter using `-- build` for example or `-- up -d` to run the image in deamon mode.
+
+The underlying command being executed is:
+
+```
+docker-compose -f docker-compose-server.yml
+```
+
+## PREREQUESITES
+
+**_TODO:_** Add required setup to be able to start running the project.
 
 ## REFERENCES AND CREDITS
 

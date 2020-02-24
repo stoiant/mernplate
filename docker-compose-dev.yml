@@ -1,0 +1,24 @@
+version: '3.7'
+services:
+  client:
+    build:
+      context: ./client
+    container_name: client
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ${DATA}/log/nginx:/var/log/nginx
+      - web-root:/usr/share/nginx/html
+    networks:
+      - app-network
+volumes:
+  web-root:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PROJECT}/client/build
+      o: bind
+networks:
+  app-network:
+    driver: bridge

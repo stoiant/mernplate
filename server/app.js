@@ -6,7 +6,7 @@ const server = require('./src/server')
 dash.monitor({
   server: server.server,
   port: 3003,
-  host: 'localhost',
+  host: '0.0.0.0',
   url: '/node-dash'
 })
 

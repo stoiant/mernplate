@@ -1,0 +1,16 @@
+version: '3.7'
+services:
+  weblog:
+    container_name: log.io
+    build:
+        context: ./log.io
+    ports:
+      - "6688:6688"
+      - "6687:6689"
+    volumes:
+      - ${DATA}/log:/data/log
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge

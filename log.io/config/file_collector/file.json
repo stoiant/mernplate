@@ -8,34 +8,34 @@
       "source": "server",
       "stream": "app",
       "config": {
-        "path": "/var/log/node/combined.log"
+        "path": "/data/log/node/combined.log"
       }
     },
     {
       "source": "database",
       "stream": "mongo",
       "config": {
-        "path": "/var/log/mongo/"
+        "path": "/data/log/mongo/"
       }
     },
     {
       "source": "database",
-      "stream": "mongo",
+      "stream": "service",
       "config": {
-        "path": "/var/log/mongodb/mongod.log"
+        "path": "/data/log/mongodb/mongod.log"
       }
     },
     {
       "source": "nginx",
-      "stream": "http",
+      "stream": "access",
       "config": {
-        "path": "/var/log/nginx/access.log"
+        "path": "/data/log/nginx/access.log"
       }
     }, {
       "source": "nginx",
-      "stream": "http",
+      "stream": "error",
       "config": {
-        "path": "/var/log/nginx/error.log"
+        "path": "/data/log/nginx/error.log"
       }
     }
   ]
